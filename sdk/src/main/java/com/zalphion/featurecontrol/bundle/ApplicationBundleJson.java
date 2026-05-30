@@ -5,9 +5,7 @@ import argo.JsonGenerator;
 import argo.JsonParser;
 import argo.jdom.JsonField;
 import argo.jdom.JsonNode;
-import com.zalphion.featurecontrol.lib.Failure;
 import com.zalphion.featurecontrol.lib.Result;
-import com.zalphion.featurecontrol.lib.Success;
 import org.jspecify.annotations.NonNull;
 import java.util.stream.Collectors;
 import lombok.val;
@@ -31,9 +29,9 @@ public class ApplicationBundleJson {
     public static @NonNull Result<ApplicationBundle> fromJson(@NonNull @lombok.NonNull String json) {
         try {
             val bundle = new JsonParser().parse(json);
-            return new Success<>(fromJson(bundle));
+            return Result.success(fromJson(bundle));
         } catch (InvalidSyntaxException e) {
-            return new Failure<>("Error parsing feature bundle JSON: " + e.getMessage());
+            return Result.failure("Error parsing feature bundle JSON: " + e.getMessage());
         }
     }
 

@@ -1,8 +1,6 @@
 package com.zalphion.featurecontrol.bundle;
 
-import com.zalphion.featurecontrol.lib.Failure;
 import com.zalphion.featurecontrol.lib.Result;
-import com.zalphion.featurecontrol.lib.Success;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
@@ -28,9 +26,9 @@ public class FlagDefinition {
             @NonNull @lombok.NonNull Function<@NonNull @lombok.NonNull String, @NonNull @lombok.NonNull String> getDefaultVariant
     ) {
         val overrideValue = overrides.get(recipient);
-        if (overrideValue != null) return new Success<>(overrideValue);
+        if (overrideValue != null) return Result.success(overrideValue);
 
-        if (buckets.isEmpty()) return new Failure<>("Buckets are empty");
+        if (buckets.isEmpty()) return Result.failure("Buckets are empty");
 
         final long hash;
         {
@@ -45,8 +43,8 @@ public class FlagDefinition {
         return buckets.stream()
                 .filter(bucket -> hash < bucket.getThreshold())
                 .findAny()
-                .map(bucket -> (Result<String>) new Success<>(bucket.getName()))
-                .orElseGet(() -> new Failure<>("No matching variant bucket found"));
+                .map(bucket -> Result.success(bucket.getName()))
+                .orElseGet(() -> Result.failure("No matching variant bucket found"));
     }
 
 }

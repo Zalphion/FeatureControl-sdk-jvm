@@ -2,9 +2,7 @@ package com.zalphion.featurecontrol.source;
 
 import com.zalphion.featurecontrol.FeatureFlag;
 import com.zalphion.featurecontrol.bundle.ApplicationBundle;
-import com.zalphion.featurecontrol.lib.Failure;
 import com.zalphion.featurecontrol.lib.Result;
-import com.zalphion.featurecontrol.lib.Success;
 import com.zalphion.featurecontrol.ApplicationProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -24,7 +22,7 @@ public abstract class ApplicationSource {
         try {
             return getInternal();
         } catch (Exception e) {
-            return new Failure<>(Optional.ofNullable(e.getMessage()).orElse("Unknown error"));
+            return Result.failure(Optional.ofNullable(e.getMessage()).orElse("Unknown error"));
         }
     }
 
@@ -50,7 +48,7 @@ public abstract class ApplicationSource {
     }
 
     public static @NonNull ApplicationSource create(Supplier<ApplicationBundle> supplier) {
-        return createWithResult(() -> new Success<>(supplier.get()));
+        return createWithResult(() -> Result.success(supplier.get()));
     }
 
     /*

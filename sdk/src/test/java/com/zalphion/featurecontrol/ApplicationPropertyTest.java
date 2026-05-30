@@ -1,6 +1,6 @@
 package com.zalphion.featurecontrol;
 
-import com.zalphion.featurecontrol.lib.Failure;
+import com.zalphion.featurecontrol.lib.Result;
 import com.zalphion.featurecontrol.source.ApplicationSource;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
@@ -43,7 +43,7 @@ public class ApplicationPropertyTest {
 
     @Test
     public void getValue_sourceFailure() {
-        val source = ApplicationSource.createWithResult(new Failure<>("foo"));
+        val source = ApplicationSource.createWithResult(Result.failure("foo"));
         assertThat(source.stringProperty("str", "default").getValue())
                 .isEqualTo("default");
     }

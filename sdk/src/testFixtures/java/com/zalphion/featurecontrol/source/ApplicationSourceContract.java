@@ -4,8 +4,7 @@ import com.zalphion.featurecontrol.FeatureControl;
 import com.zalphion.featurecontrol.TestFixtures;
 import com.zalphion.featurecontrol.bundle.ApplicationBundle;
 import com.zalphion.featurecontrol.http.HttpFunction;
-import com.zalphion.featurecontrol.lib.Failure;
-import com.zalphion.featurecontrol.lib.Success;
+import com.zalphion.featurecontrol.lib.Result;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +41,7 @@ public abstract class ApplicationSourceContract {
 
     @Test
     public void get_unauthorized() {
-        assertThat(client.toFeatureSource("key2").get()).isEqualTo(new Failure<>("Invalid SDK key"));
+        assertThat(client.toFeatureSource("key2").get()).isEqualTo(Result.failure("Invalid SDK key"));
         assertThat(server.getResponses()).containsExactly(
                 new AbstractMap.SimpleEntry<>("key2", 401)
         );
@@ -50,7 +49,7 @@ public abstract class ApplicationSourceContract {
 
     @Test
     public void get_present() {
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(TestFixtures.bundle1));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(TestFixtures.bundle1));
         assertThat(server.getResponses()).containsExactly(
                 new AbstractMap.SimpleEntry<>("key1", 200)
         );
@@ -58,9 +57,9 @@ public abstract class ApplicationSourceContract {
 
     @Test
     public void get_cached() {
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(TestFixtures.bundle1));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(TestFixtures.bundle1));
         server.withBundle("key1", ApplicationBundle.builder().build());
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(TestFixtures.bundle1));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(TestFixtures.bundle1));
 
         assertThat(server.getResponses()).containsExactly(new AbstractMap.SimpleEntry<>("key1", 200));
     }

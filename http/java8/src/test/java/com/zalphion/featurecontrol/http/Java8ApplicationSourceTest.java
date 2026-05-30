@@ -2,7 +2,7 @@ package com.zalphion.featurecontrol.http;
 
 import com.zalphion.featurecontrol.TestFixtures;
 import com.zalphion.featurecontrol.bundle.ApplicationBundle;
-import com.zalphion.featurecontrol.lib.Success;
+import com.zalphion.featurecontrol.lib.Result;
 import com.zalphion.featurecontrol.source.ApplicationSourceContract;
 import lombok.val;
 import org.jspecify.annotations.NonNull;
@@ -23,12 +23,12 @@ public class Java8ApplicationSourceTest extends ApplicationSourceContract {
                 .property("foo", "bar")
                 .build();
 
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(TestFixtures.bundle1));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(TestFixtures.bundle1));
 
         clock.updateAndGet(now -> now.plus(server.getMaxAge().plusSeconds(1)));
         server.withBundle("key1", bundle2);
 
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(bundle2));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(bundle2));
 
         assertThat(server.getResponses()).containsExactly(
                 new AbstractMap.SimpleEntry<>("key1", 200),
@@ -38,9 +38,9 @@ public class Java8ApplicationSourceTest extends ApplicationSourceContract {
 
     @Test
     public void get_cached_byETag() {
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(TestFixtures.bundle1));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(TestFixtures.bundle1));
         clock.updateAndGet(now -> now.plus(server.getMaxAge().plusSeconds(1)));
-        assertThat(client.toFeatureSource("key1").get()).isEqualTo(new Success<>(TestFixtures.bundle1));
+        assertThat(client.toFeatureSource("key1").get()).isEqualTo(Result.success(TestFixtures.bundle1));
 
         assertThat(server.getResponses()).containsExactly(
                 new AbstractMap.SimpleEntry<>("key1", 200),

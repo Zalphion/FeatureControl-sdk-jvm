@@ -3,7 +3,6 @@ package com.zalphion.featurecontrol;
 import com.zalphion.featurecontrol.bundle.ApplicationBundle;
 import com.zalphion.featurecontrol.bundle.FlagDefinition;
 import com.zalphion.featurecontrol.bundle.VariantDefinition;
-import com.zalphion.featurecontrol.lib.Failure;
 import com.zalphion.featurecontrol.lib.Result;
 import com.zalphion.featurecontrol.source.ApplicationSource;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +39,7 @@ public class FeatureFlagTest {
 
     @Test
     public void getVariant_sourceFailure() {
-        val source = ApplicationSource.createWithResult(new Failure<>("foo"));
+        val source = ApplicationSource.createWithResult(Result.failure("foo"));
         assertThat(source.flag("lasers", "default").getVariant("user1"))
                 .isEqualTo("default");
     }
