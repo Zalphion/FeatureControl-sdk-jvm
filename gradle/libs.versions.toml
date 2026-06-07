@@ -1,30 +1,16 @@
 [versions]
-
 junit = "5.8.2"
-slf4j = "2.0.0"
-http4k = "6.22.0.0"
-kotlin = "2.4.0"
-forkhandles = "2.25.6.0"
 
 [plugins]
-
-maven-publish = { id = "com.vanniktech.maven.publish", version = "0.36.0" }
-lombok = { id = "io.freefair.lombok", version="9.5.0" }
-shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+catalog-update = "nl.littlerobots.version-catalog-update:1.1.0"
+lombok = "io.freefair.lombok:9.5.0"
+maven-publish = "com.vanniktech.maven.publish:0.36.0"
+shadow = "com.gradleup.shadow:9.4.1"
 
 [libraries]
-
+assertj = "org.assertj:assertj-core:3.27.7"
+jspecify = "org.jspecify:jspecify:1.0.0"
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
-junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.8.2" }
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
-http4k-format-kotlinx-serialization = { module = "org.http4k:http4k-format-kotlinx-serialization", version.ref = "http4k" }
-http4k-client-okhttp = { module = "org.http4k:http4k-client-okhttp", version.ref = "http4k" }
-jspecify = { module = "org.jspecify:jspecify", version = "1.0.0" }
-assertj = { module = "org.assertj:assertj-core", version = "3.27.7" }
-forkhandles-values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
-forkhandles-result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
-forkhandles-result4k-kotest = { module = "dev.forkhandles:result4k-kotest", version.ref = "forkhandles" }
+junit-platform-launcher = "org.junit.platform:junit-platform-launcher:1.8.2"
+slf4j-simple = "org.slf4j:slf4j-simple:2.0.0"

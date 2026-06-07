@@ -3,6 +3,7 @@ plugins {
     `java-test-fixtures`
     alias(libs.plugins.lombok) apply false
     alias(libs.plugins.maven.publish) apply false
+    alias(libs.plugins.catalog.update)
 }
 
 allprojects {
