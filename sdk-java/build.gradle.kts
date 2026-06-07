@@ -1,15 +1,17 @@
 plugins {
+    java
     alias(libs.plugins.shadow)
 }
+
 
 dependencies {
     compileOnly(libs.jspecify)
 
-    implementation(libs.moshi.legacy)
-    implementation(libs.okhttp3)
-    implementation(libs.slf4j.api.legacy)
+    implementation("com.squareup.moshi:moshi:1.8.0")
+    implementation("com.squareup.okhttp3:okhttp:3.14.9")
+    implementation("org.slf4j:slf4j-api:1.4.3")
 
-    runtimeOnly(libs.slf4j.simple)
+    testRuntimeOnly(libs.slf4j.simple)
 
     testFixturesApi(libs.junit.jupiter.api)
     testFixturesApi(libs.assertj)

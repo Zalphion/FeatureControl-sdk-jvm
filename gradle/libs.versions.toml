@@ -4,6 +4,7 @@ junit = "5.8.2"
 slf4j = "2.0.0"
 http4k = "6.22.0.0"
 kotlin = "2.4.0"
+forkhandles = "2.25.6.0"
 
 [plugins]
 
@@ -15,22 +16,15 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 
 [libraries]
 
-# junit
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.8.2" }
-
-# slf4j
-slf4j-api-legacy = { module = "org.slf4j:slf4j-api", version = "1.4.3" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
-
-# http4k
 http4k-format-kotlinx-serialization = { module = "org.http4k:http4k-format-kotlinx-serialization", version.ref = "http4k" }
 http4k-client-okhttp = { module = "org.http4k:http4k-client-okhttp", version.ref = "http4k" }
-
-# other
 jspecify = { module = "org.jspecify:jspecify", version = "1.0.0" }
 assertj = { module = "org.assertj:assertj-core", version = "3.27.7" }
-okhttp3 = { module = "com.squareup.okhttp3:okhttp", version = "3.14.9" }
-moshi-legacy = { module = "com.squareup.moshi:moshi", version = "1.8.0" }
+forkhandles-values4k = { module = "dev.forkhandles:values4k", version.ref = "forkhandles" }
+forkhandles-result4k = { module = "dev.forkhandles:result4k", version.ref = "forkhandles" }
+forkhandles-result4k-kotest = { module = "dev.forkhandles:result4k-kotest", version.ref = "forkhandles" }

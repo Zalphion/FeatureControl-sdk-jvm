@@ -1,3 +1,3 @@
-rootProject.name = "FeatureControl-sdk-jvm"
+rootProject.name = "FeatureControl-sdk-java"
 
-include(":sdk-java", ":sdk-kotlin-jvm")
+include(":sdk-java")
