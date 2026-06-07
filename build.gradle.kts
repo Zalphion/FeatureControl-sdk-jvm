@@ -1,5 +1,6 @@
 plugins {
     java
+    alias(libs.plugins.kotlin.jvm) apply false
     `java-test-fixtures`
     alias(libs.plugins.lombok) apply false
     alias(libs.plugins.maven.publish) apply false
@@ -30,7 +31,6 @@ subprojects {
 }
 
 dependencies {
-    implementation(project(":sdk"))
-    implementation(project(":http-okhttp5"))
-    testImplementation(testFixtures(project(":sdk")))
+    implementation(project(":sdk-java"))
+    testImplementation(testFixtures(project(":sdk-java")))
 }

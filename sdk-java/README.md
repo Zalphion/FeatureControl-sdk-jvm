@@ -1,11 +1,22 @@
-import com.zalphion.featurecontrol.ApplicationProperty;
-import com.zalphion.featurecontrol.FeatureControl;
-import com.zalphion.featurecontrol.FeatureFlag;
-import com.zalphion.featurecontrol.source.ApplicationSource;
+# FeatureControl-sdk-jvm - Java
 
+## Requirements
+
+- Java 8+
+- slf4j-api: 1.4.3+
+
+## Quickstart
+
+```kotlin
+dependencies {
+    implementation("com.zalphion.featurecontrol:sdk-java:<version>")
+}
+```
+
+```java
 public class Quickstart {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         /*
          * Build a FeatureFlags instance from the Feature Control: Canada region.
          * The pre-fetching wrapper will cache the latest data and periodically refresh it.
@@ -54,3 +65,9 @@ public class Quickstart {
         }
     }
 }
+```
+
+## Examples
+
+- [Examples](https://github.com/Zalphion/FeatureControl-sdk-java/tree/main/src/main/java)
+- [Testing](https://github.com/Zalphion/FeatureControl-sdk-java/tree/main/src/test/java)
