@@ -9,7 +9,6 @@ import java.util.function.Function;
 public interface FeatureFlag {
     @NonNull String getVariant(@NonNull String recipient);
 
-
     static @NonNull FeatureFlag create(@NonNull @lombok.NonNull String variant) {
         return create(s -> variant);
     }

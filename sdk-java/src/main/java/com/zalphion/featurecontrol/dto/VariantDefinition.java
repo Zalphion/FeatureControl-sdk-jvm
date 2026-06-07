@@ -1,4 +1,4 @@
-package com.zalphion.featurecontrol.bundle;
+package com.zalphion.featurecontrol.dto;
 
 import lombok.Data;
 import org.jspecify.annotations.NonNull;

@@ -32,5 +32,7 @@
     "base64": "bG9sY2F0cw==",
     "instant": "2026-01-01T12:00:00Z",
     "duration": "PT1H"
-  }
+  },
+  "livenessInterval": "PT1M",
+  "metricsInterval": "PT10M"
 }

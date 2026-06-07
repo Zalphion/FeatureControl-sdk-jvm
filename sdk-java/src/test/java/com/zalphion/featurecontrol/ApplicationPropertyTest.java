@@ -2,12 +2,14 @@ package com.zalphion.featurecontrol;
 
 import com.zalphion.featurecontrol.lib.Result;
 import com.zalphion.featurecontrol.source.ApplicationSource;
+import com.zalphion.featurecontrol.source.StaticApplicationSource;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
 import lombok.val;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("resource")
 public class ApplicationPropertyTest {
 
     private final ApplicationSource source = TestFixtures.bundle1.toSource();
@@ -43,7 +45,7 @@ public class ApplicationPropertyTest {
 
     @Test
     public void getValue_sourceFailure() {
-        val source = ApplicationSource.createWithResult(Result.failure("foo"));
+        val source = new StaticApplicationSource(Result.failure("foo"));
         assertThat(source.stringProperty("str", "default").getValue())
                 .isEqualTo("default");
     }

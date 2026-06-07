@@ -1,6 +1,6 @@
 package com.zalphion.featurecontrol.source;
 
-import com.zalphion.featurecontrol.bundle.ApplicationBundleDto;
+import com.zalphion.featurecontrol.dto.ApplicationBundleDto;
 import com.zalphion.featurecontrol.lib.Result;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-public class PreFetchingApplicationSource extends ApplicationSource implements AutoCloseable {
+public class PreFetchingApplicationSource extends ApplicationSource {
     private final @lombok.NonNull ApplicationSource inner;
     private final @lombok.NonNull Duration retryInterval;
     private final @lombok.NonNull ScheduledExecutorService scheduler;
@@ -38,13 +38,29 @@ public class PreFetchingApplicationSource extends ApplicationSource implements A
     }
 
     @Override
+    protected void recordFlagEvaluation(@NonNull String flagName, @NonNull String variant) {
+        inner.recordFlagEvaluation(flagName, variant);
+    }
+
+    @Override
+    protected void recordFailedEvaluation(@NonNull String flagName) {
+        inner.recordFailedEvaluation(flagName);
+    }
+
+    @Override
+    protected void recordMissingFlag() {
+        inner.recordMissingFlag();
+    }
+
+    @Override
     protected @NonNull @lombok.NonNull Result<ApplicationBundleDto> getInternal() {
         return Result.successOr(cache.get(), () -> "A bundle has not yet been successfully fetched");
     }
 
     @Override
-    public void close() {
+    public void close() throws Exception {
         scheduler.shutdown();
+        inner.close();
     }
 
     private void fetchNow() {

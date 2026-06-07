@@ -1,4 +1,4 @@
-package com.zalphion.featurecontrol.bundle;
+package com.zalphion.featurecontrol.dto;
 
 import com.zalphion.featurecontrol.lib.Result;
 import lombok.Builder;
@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.zip.CRC32;
 
 @Data
@@ -21,10 +20,7 @@ public class FlagDefinition {
     private final @Singular @NonNull List<@NonNull VariantDefinition> buckets;
     private final @NonNull String saltBase64;
 
-    public Result<String> evaluate(
-            @NonNull @lombok.NonNull String recipient,
-            @NonNull @lombok.NonNull Function<@NonNull @lombok.NonNull String, @NonNull @lombok.NonNull String> getDefaultVariant
-    ) {
+    public Result<String> evaluate(@NonNull @lombok.NonNull String recipient) {
         val overrideValue = overrides.get(recipient);
         if (overrideValue != null) return Result.success(overrideValue);
 

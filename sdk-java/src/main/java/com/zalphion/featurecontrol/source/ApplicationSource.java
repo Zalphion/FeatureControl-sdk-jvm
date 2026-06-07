@@ -1,7 +1,7 @@
 package com.zalphion.featurecontrol.source;
 
 import com.zalphion.featurecontrol.FeatureFlag;
-import com.zalphion.featurecontrol.bundle.ApplicationBundleDto;
+import com.zalphion.featurecontrol.dto.ApplicationBundleDto;
 import com.zalphion.featurecontrol.lib.Result;
 import com.zalphion.featurecontrol.ApplicationProperty;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +14,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-public abstract class ApplicationSource {
+public abstract class ApplicationSource implements AutoCloseable {
 
     protected abstract @NonNull @lombok.NonNull Result<ApplicationBundleDto> getInternal() throws Exception;
+    protected abstract void recordFlagEvaluation(@NonNull String flagName, @NonNull String variant);
+    protected abstract void recordFailedEvaluation(@NonNull String flagName);
+    protected abstract void recordMissingFlag();
 
     public @NonNull @lombok.NonNull Result<ApplicationBundleDto> get() {
         try {
@@ -24,31 +27,6 @@ public abstract class ApplicationSource {
         } catch (Exception e) {
             return Result.failure(Optional.ofNullable(e.getMessage()).orElse("Unknown error"));
         }
-    }
-
-    /*
-     * Factories
-     */
-
-    public static @NonNull ApplicationSource createWithResult(Result<ApplicationBundleDto> result) {
-        return createWithResult(() -> result);
-    }
-
-    public static @NonNull ApplicationSource createWithResult(Supplier<Result<ApplicationBundleDto>> supplier) {
-        return new ApplicationSource() {
-            @Override
-            protected @NonNull @lombok.NonNull Result<ApplicationBundleDto> getInternal() {
-                return supplier.get();
-            }
-        };
-    }
-
-    public static @NonNull ApplicationSource create(ApplicationBundleDto bundle) {
-        return create(() -> bundle);
-    }
-
-    public static @NonNull ApplicationSource create(Supplier<ApplicationBundleDto> supplier) {
-        return createWithResult(() -> Result.success(supplier.get()));
     }
 
     /*
@@ -106,7 +84,9 @@ public abstract class ApplicationSource {
     ) {
         return recipient -> get()
                 .flatMap(source -> Result.successOr(source.getFlags().get(name), () -> "Flag '" + name + "' not found in source"))
-                .flatMap(flag -> flag.evaluate(recipient, getDefaultVariant))
+                .peekFailure(e -> recordMissingFlag())
+                .flatMap(def -> def.evaluate(recipient).peekFailure(e -> recordFailedEvaluation(name)))
+                .peek(variant -> recordFlagEvaluation(name, variant))
                 .peekFailure(log::trace)
                 .recover(getDefaultVariant);
     }

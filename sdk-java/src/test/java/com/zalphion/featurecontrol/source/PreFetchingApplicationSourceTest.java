@@ -1,6 +1,7 @@
 package com.zalphion.featurecontrol.source;
 
 import com.zalphion.featurecontrol.ApplicationProperty;
+import com.zalphion.featurecontrol.dto.ApplicationBundleDto;
 import com.zalphion.featurecontrol.lib.Result;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -10,13 +11,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("resource")
 public class PreFetchingApplicationSourceTest {
 
     private final DeterministicScheduler scheduler = new DeterministicScheduler();
-    private final AtomicReference<Result<com.zalphion.featurecontrol.bundle.ApplicationBundleDto>> nextResult = new AtomicReference<>(Result.success(buildFeatures("foo")));
+    private final AtomicReference<Result<ApplicationBundleDto>> nextResult = new AtomicReference<>(Result.success(buildFeatures("foo")));
     private int invocations = 0;
 
-    private final PreFetchingApplicationSource source = ApplicationSource.createWithResult(() -> {
+    private final PreFetchingApplicationSource source = new StaticApplicationSource(() -> {
         invocations++;
         return nextResult.get();
     }).preFetching(
@@ -106,7 +108,7 @@ public class PreFetchingApplicationSourceTest {
     }
 
     @Test
-    public void closeSource() {
+    public void closeSource() throws Exception {
         scheduler.tick(Duration.ZERO);
         assertThat(property.getValue()).isEqualTo("foo");
 
@@ -118,8 +120,8 @@ public class PreFetchingApplicationSourceTest {
         assertThat(property.getValue()).isEqualTo("foo");
     }
 
-    private static com.zalphion.featurecontrol.bundle.ApplicationBundleDto buildFeatures(@NonNull @lombok.NonNull String propValue) {
-        return com.zalphion.featurecontrol.bundle.ApplicationBundleDto.builder()
+    private static ApplicationBundleDto buildFeatures(@NonNull @lombok.NonNull String propValue) {
+        return ApplicationBundleDto.builder()
                 .property("prop", propValue)
                 .build();
     }

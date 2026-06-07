@@ -1,11 +1,12 @@
 package com.zalphion.featurecontrol;
 
-import com.squareup.moshi.Moshi;
-import com.zalphion.featurecontrol.bundle.ApplicationBundleDto;
+import com.zalphion.featurecontrol.dto.ApplicationBundleDto;
+import com.zalphion.featurecontrol.dto.JsonAdapters;
 import com.zalphion.featurecontrol.dto.SdkMetricsDto;
 import com.zalphion.featurecontrol.lib.Result;
 import com.zalphion.featurecontrol.dto.SdkLivenessDataDto;
 import com.zalphion.featurecontrol.source.ApplicationSource;
+import com.zalphion.featurecontrol.source.HttpApplicationSource;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -27,7 +28,6 @@ public class FeatureControl {
 
     private final @NonNull URI baseUri;
     private final @NonNull OkHttpClient client;
-    private final @NonNull Moshi moshi;
 
     @SneakyThrows
     public FeatureControl(@NonNull @lombok.NonNull URI baseUri) {
@@ -37,7 +37,6 @@ public class FeatureControl {
                 .callTimeout(Duration.ofSeconds(10))
                 .cache(new Cache(Files.createTempDirectory("feature-control-http").toFile(), 1000L))
                 .build();
-        moshi = new Moshi.Builder().build();
     }
 
 
@@ -83,7 +82,7 @@ public class FeatureControl {
                         if (body == null) {
                             return Result.failure("Unexpected null response body");
                         }
-                        return Result.success(Objects.requireNonNull(moshi.adapter(ApplicationBundleDto.class).fromJson(body.source())));
+                        return Result.success(Objects.requireNonNull(JsonAdapters.applicationBundle.fromJson(body.source())));
                     } catch (IOException e) {
                         return Result.failure("Failed to parse response body: " + e.getMessage());
                     }
@@ -100,7 +99,7 @@ public class FeatureControl {
             @NonNull @lombok.NonNull String sdkKey,
             @NonNull @lombok.NonNull SdkLivenessDataDto data
     ) {
-        val json = moshi.adapter(SdkLivenessDataDto.class).toJson(data);
+        val json = JsonAdapters.sdkLivenessData.toJson(data);
 
         val request = new Request.Builder()
                 .post(RequestBody.create(JSON, json))
@@ -116,7 +115,7 @@ public class FeatureControl {
             @NonNull @lombok.NonNull String sdkKey,
             @NonNull @lombok.NonNull SdkMetricsDto data
     ) {
-        val json = moshi.adapter(SdkMetricsDto.class).toJson(data);
+        val json = JsonAdapters.sdkMetrics.toJson(data);
 
         val request = new Request.Builder()
                 .post(RequestBody.create(JSON, json))
@@ -128,12 +127,7 @@ public class FeatureControl {
     }
 
     public @NonNull ApplicationSource toFeatureSource(@NonNull @lombok.NonNull String sdkKey) {
-        return new ApplicationSource() {
-            @Override
-            protected @NonNull @lombok.NonNull Result<ApplicationBundleDto> getInternal() {
-                return getBundle(sdkKey);
-            }
-        };
+        return new HttpApplicationSource(this, sdkKey);
     }
 
     private <T> Result<T> unexpectedError(Response response) {

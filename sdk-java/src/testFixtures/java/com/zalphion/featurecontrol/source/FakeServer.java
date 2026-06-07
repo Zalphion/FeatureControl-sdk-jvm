@@ -1,73 +1,61 @@
 package com.zalphion.featurecontrol.source;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
+import com.zalphion.featurecontrol.dto.ApplicationBundleDto;
+import com.zalphion.featurecontrol.dto.JsonAdapters;
+import com.zalphion.featurecontrol.dto.SdkLivenessDataDto;
+import com.zalphion.featurecontrol.dto.SdkMetricsDto;
+import com.zalphion.featurecontrol.lib.Pair;
+import io.javalin.Javalin;
+import io.javalin.http.Context;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import lombok.val;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@RequiredArgsConstructor
 public class FakeServer {
-    private static final int EMPTY_BODY_LENGTH = -1;
 
-    private final @Getter List<Map.Entry<String, Integer>> responses = new CopyOnWriteArrayList<>();
-    private final Map<String, com.zalphion.featurecontrol.bundle.ApplicationBundleDto> bundles = new ConcurrentHashMap<>();
-    private final JsonAdapter<com.zalphion.featurecontrol.bundle.ApplicationBundleDto> bundleAdapter = new Moshi.Builder().build().adapter(com.zalphion.featurecontrol.bundle.ApplicationBundleDto.class);
+    private final @Getter List<Pair<String, Integer>> responses = new CopyOnWriteArrayList<>();
+    private final @Getter List<SdkLivenessDataDto> liveness = new CopyOnWriteArrayList<>();
+    private final @Getter List<SdkMetricsDto> metrics = new CopyOnWriteArrayList<>();
+    private final Map<String, ApplicationBundleDto> bundles = new ConcurrentHashMap<>();
+    private final @NonNull Javalin app = Javalin.create(config -> config.showJavalinBanner = false);
 
     private final @NonNull @Getter Duration maxAge;
-    private final @NonNull HttpServer server;
 
-    public FakeServer(@NonNull @lombok.NonNull Duration maxAge) {
-        this.maxAge = maxAge;
-
-        try {
-            this.server = HttpServer.create(new InetSocketAddress(0), 0);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create HTTP server", e);
-        }
-
-        server.createContext("/", exchange -> {
-            if (exchange.getRequestMethod().equals("GET") && exchange.getRequestURI().getPath().equals("/sdkapi/v1/bundle")) {
-                getBundle(exchange);
-            } else {
-                exchange.sendResponseHeaders(404, EMPTY_BODY_LENGTH);
-            }
-        });
-    }
-
-    public FakeServer withBundle(String sdkKey, com.zalphion.featurecontrol.bundle.ApplicationBundleDto bundle) {
+    public FakeServer withBundle(String sdkKey, ApplicationBundleDto bundle) {
         bundles.put(sdkKey, bundle);
         return this;
     }
 
     public int start() {
-        server.start();
-        return server.getAddress().getPort();
+        app.get("/sdkapi/v1/bundle", this::getBundle);
+        app.post("/sdkapi/v1/liveness", this::updateLiveness);
+        app.post("/sdkapi/v1/metrics", this::pushMetrics);
+
+        app.after(ctx -> {
+            val sdkKey = getSdkKey(ctx.req).orElse("");
+            responses.add(new Pair<>(sdkKey, ctx.status()));
+        });
+
+        return app.start().port();
     }
 
     public void stop() {
-        server.stop(0);
+        app.stop();
     }
 
-    private void getBundle(@NonNull @lombok.NonNull HttpExchange exchange) throws IOException {
-        val ifNoneMatch = Optional.ofNullable(exchange.getRequestHeaders().get("If-None-Match"))
-                .orElseGet(Collections::emptyList)
-                .stream().findFirst().orElse(null);
+    private void getBundle(@NonNull Context ctx) {
+        ctx.header("Cache-Control", "max-age=" + maxAge.getSeconds());
 
-        val sdkKey = Optional.ofNullable(exchange.getRequestHeaders().get("Authorization"))
-                .orElseGet(Collections::emptyList)
-                .stream().findFirst().map(value -> value.substring(value.indexOf(' ') + 1))
-                .orElse("");
-
+        val sdkKey = getSdkKey(ctx.req).orElse("");
         val bundle = bundles.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(sdkKey))
                 .map(Map.Entry::getValue)
@@ -75,26 +63,34 @@ public class FakeServer {
                 .orElse(null);
 
         if (bundle == null) {
-            responses.add(new AbstractMap.SimpleEntry<>(sdkKey, 401));
-            exchange.sendResponseHeaders(401, EMPTY_BODY_LENGTH);
+            ctx.status(401);
             return;
         }
 
         val eTag = "W/\"" + bundle.hashCode() + "\"";
-        exchange.getResponseHeaders().set("ETag", eTag);
-        exchange.getResponseHeaders().set("Cache-Control", "max-age=" + maxAge.getSeconds());
-
-        if (eTag.equals(ifNoneMatch)) {
-            responses.add(new AbstractMap.SimpleEntry<>(sdkKey, 304));
-            exchange.sendResponseHeaders(304, EMPTY_BODY_LENGTH);
+        ctx.header("ETag", eTag);
+        if (eTag.equals(ctx.header("If-None-Match"))) {
+            ctx.status(304);
             return;
         }
 
-        responses.add(new AbstractMap.SimpleEntry<>(sdkKey, 200));
-        val jsonBinary = bundleAdapter.toJson(bundle).getBytes(StandardCharsets.UTF_8);
-        exchange.sendResponseHeaders(200, jsonBinary.length);
-        try (val out = exchange.getResponseBody()) {
-            out.write(jsonBinary);
-        }
+        ctx.result(JsonAdapters.applicationBundle.toJson(bundle));
+    }
+
+    private void updateLiveness(@NonNull Context ctx) throws IOException {
+        val data = JsonAdapters.sdkLivenessData.fromJson(ctx.body());
+        liveness.add(data);
+        ctx.status(200);
+    }
+
+    private void pushMetrics(@NonNull Context ctx) throws IOException {
+        val data = JsonAdapters.sdkMetrics.fromJson(ctx.body());
+        metrics.add(data);
+        ctx.status(200);
+    }
+
+    private static @NonNull Optional<String> getSdkKey(@NonNull HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader("Authorization"))
+                .map(value -> value.substring(value.indexOf(' ') + 1));
     }
 }
