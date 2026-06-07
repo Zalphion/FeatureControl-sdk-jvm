@@ -3,29 +3,20 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License](https://img.shields.io/maven-central/v/com.zalphion.featurecontrol/sdk-java)](https://mvnrepository.com/artifact/com.zalphion.featurecontrol)
 
-> [!WARNING]
-> Work in progress
-
 Official Java SDK for the Feature Control Platform.
 
 ## Requirements
 
 - Java 8+
-- slf4j-api: 1.4.3+
+- Slf4j 1.4+
+
+All other dependencies are carefully selected and shaded to be minimal and non-intrusive across a wide range of legacy dependency graphs.
 
 ## Quickstart
 
-### Gradle
-
 ```kotlin
 dependencies {
-    implementation("com.zalphion.featurecontrol:sdk-java-okhttp5:<version>")
-  
-    // Or legacy OkHttp3
-    implementation("com.zalphion.featurecontrol:sdk-java-okhttp4:<version>")
-  
-    // Or when you're already in dependency hell
-    implementation("com.zalphion.featurecontrol:sdk-java-8:<version>")
+    implementation("com.zalphion.featurecontrol:sdk-java:<version>")
 }
 ```
 
@@ -37,7 +28,7 @@ public class Quickstart {
          * Build a FeatureFlags instance from the Feature Control: Canada region.
          * The pre-fetching wrapper will cache the latest data and periodically refresh it.
          */
-        final ApplicationSource source = FeatureControl.canada(new OkHttp5HttpFunction())
+        final ApplicationSource source = FeatureControl.canada()
                 .toFeatureSource(System.getenv("FEATURE_CONTROL_SDK_KEY"))
                 .preFetching();
 

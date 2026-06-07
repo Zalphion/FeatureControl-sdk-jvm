@@ -3,6 +3,7 @@ plugins {
     `java-test-fixtures`
     alias(libs.plugins.lombok) apply false
     alias(libs.plugins.maven.publish) apply false
+    alias(libs.plugins.catalog.update)
 }
 
 allprojects {
@@ -30,7 +31,6 @@ subprojects {
 }
 
 dependencies {
-    implementation(project(":sdk"))
-    implementation(project(":http-okhttp5"))
-    testImplementation(testFixtures(project(":sdk")))
+    implementation(project(":sdk-java"))
+    testImplementation(testFixtures(project(":sdk-java")))
 }
